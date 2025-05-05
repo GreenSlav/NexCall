@@ -400,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 .idea
 .DS_Store
+NexCall/backend/Web/appsettings.json
