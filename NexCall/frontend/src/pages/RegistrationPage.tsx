@@ -2,6 +2,7 @@ import {FC, useState} from "react";
 import styled from "styled-components";
 import {useNavigate} from "react-router-dom";
 import {motion} from "framer-motion";
+import {PasswordInput} from "../components/PasswordInput";
 
 const Container = styled.div`
     width: 100vw;
@@ -183,13 +184,7 @@ export const RegisterPage: FC = () => {
                         onChange={(e) => setName(e.target.value)}
                         required
                     />
-                    <Input
-                        type="password"
-                        placeholder="Пароль"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                    <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Пароль"/>
                     <StyledModernButton type="submit">Зарегистрироваться</StyledModernButton>
                 </Form>
             </Hero>

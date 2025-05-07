@@ -2,6 +2,7 @@ import {FC, useState} from "react";
 import styled from "styled-components";
 import {useNavigate} from "react-router-dom";
 import {motion} from "framer-motion";
+import {PasswordInput} from "../components/PasswordInput";
 
 const Container = styled.div`
     width: 100vw;
@@ -129,6 +130,19 @@ const StyledModernButton = styled.button`
     }
 `;
 
+const ForgotPasswordButton = styled.button`
+    margin-top: 2rem;
+    font-size: 1.25rem;
+    color: #696969;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 3px;
+
+    &:hover {
+        border-bottom: 1.5px solid gray;
+    }
+`
+
 export const LoginPage: FC = () => {
     const navigate = useNavigate();
     const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -159,15 +173,10 @@ export const LoginPage: FC = () => {
                         onChange={(e) => setEmailOrUsername(e.target.value)}
                         required
                     />
-                    <Input
-                        type="password"
-                        placeholder="Пароль"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                    <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Пароль"/>
                     <StyledModernButton type="submit">Войти</StyledModernButton>
                 </Form>
+                <ForgotPasswordButton>Забыли пароль?</ForgotPasswordButton>
             </Hero>
         </Container>
     );
