@@ -48,5 +48,4 @@ public class User
     // public List<Chat> Chats { get; set; } = default!;
     //
     // public List<Message> SentMessages { get; set; } = default!;
-
 }

@@ -1,22 +1,13 @@
-using Core.Abstractions;
-using Infrastructure;
-using Microsoft.EntityFrameworkCore;
+using Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Контекст БД
-builder.Services.AddScoped<IDbContext, EfContext>();
-builder.Services.AddDbContext<EfContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+// Регистрация БД
+builder.Services.RegisterPostgresDatabase(builder.Configuration);
 var app = builder.Build();
 
 // Автоматически применяем миграции
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<EfContext>();
-    dbContext.Database.Migrate();
-}
+app.ApplyMigrations();
 
 app.UseHttpsRedirection();
 

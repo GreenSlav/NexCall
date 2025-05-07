@@ -401,3 +401,4 @@ FodyWeavers.xsd
 .idea
 .DS_Store
 NexCall/backend/Web/appsettings.json
+NexCall/frontend/.env

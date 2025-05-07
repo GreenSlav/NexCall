@@ -32,7 +32,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.Property(u => u.DisplayName)
-            .HasDefaultValue(string.Empty)
+            .IsRequired()
             .HasMaxLength(100);
 
         builder.Property(u => u.AvatarUrl);
