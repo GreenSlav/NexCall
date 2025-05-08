@@ -3,13 +3,14 @@ using Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(Core.Entry).Assembly);
-});
+// Регистрация сервисов из Core слоя
+builder.Services.AddCoreServices();
+// Регистрация сервисов из Infrastructure слоя
+builder.Services.AddInfrastructureServices();
 
 // Регистрация БД
 builder.Services.RegisterPostgresDatabase(builder.Configuration);
+
 var app = builder.Build();
 
 // Перехват ошибок при обработке запросов

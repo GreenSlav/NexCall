@@ -32,7 +32,7 @@ const ToggleButton = styled.button`
     border-radius: 5px;
     display: flex;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.29);
+    background-color: rgba(0, 0, 0, 0.18);
 `;
 
 type Props = {

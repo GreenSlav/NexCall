@@ -3,6 +3,8 @@ import styled from "styled-components";
 import {useNavigate} from "react-router-dom";
 import {motion} from "framer-motion";
 import {PasswordInput} from "../components/PasswordInput";
+import {useErrorBanner} from "../hooks/useErrorBanner";
+import {ErrorBanner} from "../components/ErrorBanner";
 
 const Container = styled.div`
     width: 100vw;
@@ -144,18 +146,43 @@ const ForgotPasswordButton = styled.button`
 `
 
 export const LoginPage: FC = () => {
+    const API_BASE_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
     const navigate = useNavigate();
     const [emailOrUsername, setEmailOrUsername] = useState("");
     const [password, setPassword] = useState("");
+    const { isError, messageError, showError } = useErrorBanner();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Тут логика логина
-        navigate("/");
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    emailOrUsername,
+                    password,
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                alert(error.message || "Ошибка при регистрации");
+                return;
+            }
+
+            navigate("/login");
+        } catch (error) {
+            console.error("Ошибка регистрации:", error);
+            showError("Ошибка такая-то")
+        }
     };
 
     return (
         <Container>
+            <ErrorBanner isVisible={isError} message={messageError} />
             <Hero
                 as={motion.section}
                 initial={{ opacity: 0}}
