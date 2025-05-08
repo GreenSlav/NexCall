@@ -1,3 +1,6 @@
+using Core.Abstractions;
+using Infrastructure.Services;
+
 namespace Web.Extensions;
 
 /// <summary>
@@ -11,5 +14,8 @@ public static class InfrastructureServices
     /// <param name="services">Сервисы</param>
     public static void AddInfrastructureServices(this IServiceCollection services)
     {
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IRedisService, RedisService>();
+        services.AddScoped<IVerificationService, VerificationService>();
     }
 }

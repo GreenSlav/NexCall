@@ -1,4 +1,6 @@
 using Core.Abstractions;
+using Core.Services;
+using Infrastructure.Services;
 using Web.Authentication;
 
 namespace Web.Extensions;
@@ -21,5 +23,8 @@ public static class CoreServices
         {
             cfg.RegisterServicesFromAssembly(typeof(Core.Entry).Assembly);
         });
+
+        services.AddSingleton<IPasswordEncryptionService, PasswordEncryptionService>();
+        services.AddScoped<IVerificationService, VerificationService>();
     }
 }

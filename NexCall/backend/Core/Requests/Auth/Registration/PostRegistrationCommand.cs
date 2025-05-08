@@ -6,6 +6,6 @@ namespace Core.Requests.Auth.Registration;
 /// <summary>
 /// Класс команды для регистрации
 /// </summary>
-public class PostRegistrationCommand : PostRegistrationRequest, IRequest
+public class PostRegistrationCommand : PostRegistrationRequest, IRequest<RegistrationVerificationResponse>
 {
 }

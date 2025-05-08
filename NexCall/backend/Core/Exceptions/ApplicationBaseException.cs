@@ -1,11 +1,11 @@
-namespace Core.Abstractions;
+namespace Core.Exceptions;
 
-public abstract class ApplicationBaseException : Exception
+public class ApplicationBaseException : Exception
 {
     public string LogMessage { get; }
     public string ClientMessage { get; }
 
-    protected ApplicationBaseException(string logMessage, string clientMessage)
+    public ApplicationBaseException(string logMessage, string clientMessage)
         : base(logMessage)
     {
         LogMessage = logMessage;

@@ -10,6 +10,10 @@ builder.Services.AddInfrastructureServices();
 
 // Регистрация БД
 builder.Services.RegisterPostgresDatabase(builder.Configuration);
+builder.Services.RegisterRedisDatabase(builder.Configuration);
+
+// Регистрация опций
+builder.Services.RegisterOptions(builder.Configuration);
 
 var app = builder.Build();
 
