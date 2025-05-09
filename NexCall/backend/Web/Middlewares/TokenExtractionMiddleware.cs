@@ -2,15 +2,26 @@ using Core.Constants;
 
 namespace Web.Middlewares;
 
+/// <summary>
+/// Middleware для извлечения токенов из запроса в зависимости от платформы клиента
+/// </summary>
 public class TokenExtractionMiddleware
 {
     private readonly RequestDelegate _next;
 
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="next">Следующий middleware</param>
     public TokenExtractionMiddleware(RequestDelegate next)
     {
         _next = next;
     }
 
+    /// <summary>
+    /// Метод обработки запроса
+    /// </summary>
+    /// <param name="context">Контекст HTTP запроса</param>
     public async Task Invoke(HttpContext context)
     {
         string jwt = context.Request.Headers.Authorization.FirstOrDefault()?.Split(" ").Last() ?? string.Empty;

@@ -17,5 +17,6 @@ public static class InfrastructureServices
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IRedisService, RedisService>();
         services.AddScoped<IVerificationService, VerificationService>();
+        services.AddScoped<IClientInfoService, ClientInfoService>();
     }
 }

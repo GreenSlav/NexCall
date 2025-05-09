@@ -1,7 +1,10 @@
 using Contracts.Requests.Auth.ConfirmEmail;
 using Contracts.Requests.Auth.Login;
 using Contracts.Requests.Auth.Registration;
+using Core.Abstractions;
+using Core.Constants;
 using Core.Requests.Auth.ConfirmEmail;
+using Core.Requests.Auth.Login;
 using Core.Requests.Auth.Registration;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +40,13 @@ public class AuthController : ControllerBase
         [FromBody] PostLoginRequest request,
         CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _mediator.Send(new PostLoginCommand()
+        {
+            EmailOrUsername = request.EmailOrUsername,
+            Password = request.Password
+        }, cancellationToken);
+        
+        return Ok();
     }
 
     /// <summary>
@@ -61,25 +70,44 @@ public class AuthController : ControllerBase
         
         return Ok(response);
     }
-    
+
     /// <summary>
     /// Метод подтверждения почты
     /// </summary>
+    /// <param name="clientInfoService">Сервис определения устройства клиента</param>
     /// <param name="request">Модель запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns></returns>
     [HttpPost("confirm-mail")]
     public async Task<IActionResult> ConfirmEmail(
+        [FromServices] IClientInfoService clientInfoService,
         [FromBody] PostConfirmEmailRequest request,
         CancellationToken cancellationToken)
     {
-        await _mediator.Send(new PostConfirmEmailCommand()
+        // TODO: Зарефакторить
+        var response = await _mediator.Send(new PostConfirmEmailCommand()
         {
-            Code = request.Code,
             Id = request.Id,
+            Code = request.Code
         }, cancellationToken);
-        
-        return Ok();
+
+        var userAgent = Request.Headers.UserAgent.ToString();
+        var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
+
+        if (clientInfoService.IsWebClient(userAgent, headers))
+        {
+            Response.Cookies.Append(RefreshToken.RefreshTokenCookieName, response.RefreshToken!, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(new { accessToken = response.AccessToken, refreshToken = (string?)null });
+        }
+
+        return Ok(response);
     }
 
     /// <summary>

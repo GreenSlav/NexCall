@@ -1,3 +1,4 @@
+using Contracts.Requests.Auth.ConfirmEmail;
 using Core.Abstractions;
 using Core.Entities;
 using Core.Exceptions;
@@ -8,19 +9,34 @@ namespace Core.Requests.Auth.ConfirmEmail;
 /// <summary>
 /// Обработчик для <see cref="PostConfirmEmailCommand"/> 
 /// </summary>
-public class PostConfirmEmailCommandHandler : IRequestHandler<PostConfirmEmailCommand>
+public class PostConfirmEmailCommandHandler : IRequestHandler<PostConfirmEmailCommand, PostConfirmEmailResponse>
 {
     private readonly IDbContext _dbContext;
     private readonly IVerificationService _verificationService;
+    private readonly IJwtService _jwtService;
+    private readonly IRefreshTokenService _refreshTokenService;
 
-    public PostConfirmEmailCommandHandler(IDbContext dbContext, IVerificationService verificationService)
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="dbContext">Контекст БД</param>
+    /// <param name="verificationService">Сервис верификации</param>
+    /// <param name="jwtService">Сервис работы с Jwt</param>
+    /// <param name="refreshTokenService">Сервис работы с refresh-токеном</param>
+    public PostConfirmEmailCommandHandler(
+        IDbContext dbContext,
+        IVerificationService verificationService,
+        IJwtService jwtService,
+        IRefreshTokenService refreshTokenService)
     {
         _dbContext = dbContext;
         _verificationService = verificationService;
+        _jwtService = jwtService;
+        _refreshTokenService = refreshTokenService; 
     }
 
     /// <inheritdoc />
-    public async Task Handle(PostConfirmEmailCommand request, CancellationToken cancellationToken)
+    public async Task<PostConfirmEmailResponse> Handle(PostConfirmEmailCommand request, CancellationToken cancellationToken)
     {
         var isValid = await _verificationService.VerifyCodeAsync(request.Id, request.Code);
         if (!isValid)
@@ -43,5 +59,14 @@ public class PostConfirmEmailCommandHandler : IRequestHandler<PostConfirmEmailCo
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         await _verificationService.DeletePendingRegistrationAsync(request.Id);
+        
+        var jwt = _jwtService.GenerateToken(user);
+        var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(user.Id);
+
+        return new PostConfirmEmailResponse
+        {
+            AccessToken = jwt,
+            RefreshToken = refreshToken,
+        };
     }
 }
