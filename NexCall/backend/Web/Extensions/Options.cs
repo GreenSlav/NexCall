@@ -1,3 +1,4 @@
+using Core.Constants;
 using Core.Options;
 
 namespace Web.Extensions;
@@ -15,7 +16,7 @@ public static class Options
     public static void RegisterOptions(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<EmailSettingsOptions>(configuration.GetSection("EmailSettings"));
-        services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
-        services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
+        services.Configure<JwtOptions>(configuration.GetSection(Jwt.PathToJwtConfigSection));
+        services.Configure<RefreshTokenOptions>(configuration.GetSection(RefreshToken.PathToRefreshTokenConfigSection));
     }
 }

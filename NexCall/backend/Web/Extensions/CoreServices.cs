@@ -26,5 +26,6 @@ public static class CoreServices
 
         services.AddSingleton<IPasswordEncryptionService, PasswordEncryptionService>();
         services.AddScoped<IVerificationService, VerificationService>();
+        services.AddSingleton<IValidationService, ValidationService>();
     }
 }

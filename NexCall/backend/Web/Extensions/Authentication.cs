@@ -50,8 +50,9 @@ public static class Auth
     /// <param name="app">Приложение</param>
     public static void UseAuth(this WebApplication app)
     {
-        app.UseAuthentication();
+        app.UseMiddleware<TokenExtractionMiddleware>();
         app.UseMiddleware<TokenRefreshMiddleware>();
+        app.UseAuthentication();
         app.UseAuthorization();
     }
 }

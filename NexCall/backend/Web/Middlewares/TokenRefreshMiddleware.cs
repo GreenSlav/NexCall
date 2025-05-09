@@ -1,7 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using Core.Abstractions;
-using Core.Options;
+using Core.Constants;
+using Core.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Web.Middlewares;
 
@@ -20,7 +21,7 @@ public class TokenRefreshMiddleware
     {
         _next = next;
     }
-
+    
     /// <summary>
     /// Метод обработки запроса
     /// </summary>
@@ -28,45 +29,47 @@ public class TokenRefreshMiddleware
     /// <param name="refreshService">Сервис для работы с refresh-токеном</param>
     /// <param name="jwtService">Сервис для работы с JWT-токеном</param>
     /// <param name="dbContext">Контекст БД</param>
-    /// <param name="jwtOptions">JWT-опции</param>
     public async Task Invoke(
         HttpContext context,
         IRefreshTokenService refreshService,
         IJwtService jwtService,
-        IDbContext dbContext,
-        IOptions<JwtOptions> jwtOptions)
+        IDbContext dbContext)
     {
-        await _next(context);
+        var token = context.Items["jwt"] as string;
+        var refreshToken = context.Items["refreshToken"] as string;
 
-        // Если ответ был 401 — пробуем освежить токен
-        if (context.Response.StatusCode == StatusCodes.Status401Unauthorized
-            && !context.Items.ContainsKey("TokenRefreshed"))
+        if (!string.IsNullOrEmpty(token))
         {
-            var refreshToken = context.Request.Cookies["refreshToken"];
-            if (!string.IsNullOrEmpty(refreshToken))
+            var principal = jwtService.GetPrincipalFromToken(token);
+
+            if (principal is null || jwtService.IsTokenExpired(token))
             {
-                var userId = await refreshService.ValidateRefreshTokenAsync(refreshToken);
-                if (userId is not null)
+                if (!string.IsNullOrEmpty(refreshToken))
                 {
-                    var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId.Value);
-                    if (user is not null)
+                    var userId = await refreshService.ValidateRefreshTokenAsync(refreshToken);
+                    if (userId.HasValue)
                     {
-                        var newAccessToken = jwtService.GenerateToken(user);
+                        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId)
+                                   ?? throw new NotFoundException(
+                                       "Произошла ошибка",
+                                       $"При попытке обновить токен пользователю ({userId}) он не был найден в БД");
+                        var newJwt = jwtService.GenerateToken(user);
+                        context.User = jwtService.GetPrincipalFromToken(newJwt)!;
 
-                        if (!context.Response.HasStarted)
+                        context.Response.OnStarting(() =>
                         {
-                            context.Response.Clear();
-                            context.Response.StatusCode = StatusCodes.Status200OK;
-
-                            context.Response.Headers["access-token"] = newAccessToken;
-
-                            context.Items["TokenRefreshed"] = true;
-                            // Заново прогоняем пайплайн с валидным токеном
-                            await _next(context);
-                        }
+                            context.Response.Headers[Jwt.NewJwtTokenHeader] = newJwt;
+                            return Task.CompletedTask;
+                        });
                     }
                 }
             }
+            else
+            {
+                context.User = principal;
+            }
         }
+
+        await _next(context);
     }
 }
