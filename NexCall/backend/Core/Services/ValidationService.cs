@@ -4,8 +4,12 @@ using ValidationException = Core.Exceptions.ValidationException;
 
 namespace Core.Services;
 
+/// <summary>
+/// Сервис валидации данных
+/// </summary>
 public class ValidationService : IValidationService
 {
+    /// <inheritdoc />
     public bool ValidateEmail(string email)
     {
         if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
@@ -14,6 +18,7 @@ public class ValidationService : IValidationService
         return true;
     }
 
+    /// <inheritdoc />
     public bool ValidatePassword(string password)
     {
         var onlyLatin = new Regex("^[a-zA-Z0-9]+$");
@@ -26,6 +31,7 @@ public class ValidationService : IValidationService
         return true;
     }
 
+    /// <inheritdoc />
     public bool ValidateUsername(string username)
     {
         var onlyLatin = new Regex("^[a-zA-Z0-9]+$");

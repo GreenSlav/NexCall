@@ -20,4 +20,11 @@ public interface IRedisService
     /// <param name="key">Ключ</param>
     /// <returns></returns>
     Task<string?> GetAsync(string key);
+    
+    /// <summary>
+    /// Метод удаления записи из Redis
+    /// </summary>
+    /// <param name="key">Ключ</param>
+    /// <returns></returns>
+    Task<bool> DeleteAsync(string key); 
 }

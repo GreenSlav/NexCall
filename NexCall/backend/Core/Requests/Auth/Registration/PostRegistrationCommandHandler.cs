@@ -1,16 +1,14 @@
-using System.Text.Json;
 using Contracts.Requests.Auth.Registration;
 using Core.Abstractions;
 using Core.Exceptions;
 using Core.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
 
 namespace Core.Requests.Auth.Registration;
 
 /// <summary>
-/// Класс обработчика команды регистрации
+/// Обработчик для <see cref="PostRegistrationCommand"/> 
 /// </summary>
 public class PostRegistrationCommandHandler : IRequestHandler<PostRegistrationCommand, RegistrationVerificationResponse>
 {
@@ -18,7 +16,6 @@ public class PostRegistrationCommandHandler : IRequestHandler<PostRegistrationCo
     private readonly IEmailService _emailService;
     private readonly IVerificationService _verificationService;
     private readonly IPasswordEncryptionService _passwordHasher;
-    private readonly IRedisService _redis;
     private readonly IValidationService _validationService;
 
     /// <summary>
@@ -27,38 +24,32 @@ public class PostRegistrationCommandHandler : IRequestHandler<PostRegistrationCo
     /// <param name="dbContext">Контекст БД</param>
     /// <param name="emailService">Сервис работы с почтой</param>
     /// <param name="verificationService">Сервис верификации</param>
-    /// <param name="passwordHasher">Сервис шифрования пароля</param>
-    /// <param name="redis">Redis</param>
+    /// <param name="passwordHasher">Сервис хэширования пароля</param>
     /// <param name="validationService">Сервис валидации</param>
     public PostRegistrationCommandHandler(
         IDbContext dbContext,
         IEmailService emailService,
         IVerificationService verificationService,
         IPasswordEncryptionService passwordHasher,
-        IRedisService redis,
         IValidationService validationService)
     {
         _dbContext = dbContext;
         _emailService = emailService;
         _verificationService = verificationService;
         _passwordHasher = passwordHasher;
-        _redis = redis;
         _validationService = validationService;
     }
     
+    /// <inheritdoc />
     public async Task<RegistrationVerificationResponse> Handle(PostRegistrationCommand request, CancellationToken cancellationToken)
     {
         ValidateInput(request);
 
-        var emailExistsTask = _dbContext.Users.AnyAsync(u => u.Email == request.Email);
-        var usernameExistsTask = _dbContext.Users.AnyAsync(u => u.Username == request.Username);
-
+        var emailExistsTask = _dbContext.Users.AnyAsync(u => u.Email == request.Email, cancellationToken);
+        var usernameExistsTask = _dbContext.Users.AnyAsync(u => u.Username == request.Username, cancellationToken);
         await Task.WhenAll(emailExistsTask, usernameExistsTask);
-        
-        var emailExists = emailExistsTask.Result;
-        var usernameExists = usernameExistsTask.Result;
-        
-        if (emailExists || usernameExists)
+
+        if (emailExistsTask.Result || usernameExistsTask.Result)
             throw new ApplicationBaseException(
                 "Пользователь с такими данными уже существует",
                 $"Пользователь с такими данными уже существует: {request.Username}, {request.Email}");
@@ -79,10 +70,8 @@ public class PostRegistrationCommandHandler : IRequestHandler<PostRegistrationCo
             ExpiresAt = expiresAt
         };
 
-        var json = JsonSerializer.Serialize(registrationPayload);
-        await _redis.SetAsync($"register:{verificationGuid}", json, TimeSpan.FromMinutes(10));
-
-        await _emailService.SendVerificationCodeAsync(request.Email, verificationCode);
+        await _verificationService.SavePendingRegistrationAsync(verificationGuid, registrationPayload, TimeSpan.FromMinutes(10));
+        await _emailService.SendVerificationCodeAsync(request.Email, verificationCode, cancellationToken);
 
         return new RegistrationVerificationResponse
         {
@@ -90,7 +79,7 @@ public class PostRegistrationCommandHandler : IRequestHandler<PostRegistrationCo
             ExpiresAt = expiresAt
         };
     }
-    
+
     private void ValidateInput(PostRegistrationCommand request)
     {
         _validationService.ValidateEmail(request.Email);

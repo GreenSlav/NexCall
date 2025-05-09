@@ -6,6 +6,7 @@ namespace Core.Services;
 
 public class PasswordEncryptionService : IPasswordEncryptionService
 {
+    /// <inheritdoc />
     public string EncryptPassword(string password)
     {
         password ??= string.Empty;
@@ -15,6 +16,7 @@ public class PasswordEncryptionService : IPasswordEncryptionService
         return Convert.ToBase64String(sha.ComputeHash(saltedValue));
     }
     
+    /// <inheritdoc />
     public bool ValidatePassword(string password, string encodedPassword)
         => encodedPassword == EncryptPassword(password);
 }

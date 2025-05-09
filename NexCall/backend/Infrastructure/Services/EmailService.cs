@@ -23,7 +23,7 @@ public class EmailService : IEmailService
     }
 
     /// <inheritdoc />
-    public async Task SendVerificationCodeAsync(string email, int code)
+    public async Task SendVerificationCodeAsync(string email, int code, CancellationToken cancellationToken)
     {
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress("My App", _settings.FromAddress));
@@ -36,9 +36,9 @@ public class EmailService : IEmailService
         };
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(_settings.SmtpServer, _settings.Port, _settings.UseSsl);
-        await client.AuthenticateAsync(_settings.Username, _settings.Password);
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
+        await client.ConnectAsync(_settings.SmtpServer, _settings.Port, _settings.UseSsl, cancellationToken);
+        await client.AuthenticateAsync(_settings.Username, _settings.Password, cancellationToken);
+        await client.SendAsync(message, cancellationToken);
+        await client.DisconnectAsync(true, cancellationToken);
     }
 }

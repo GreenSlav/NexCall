@@ -15,6 +15,10 @@ builder.Services.RegisterRedisDatabase(builder.Configuration);
 // Регистрация опций
 builder.Services.RegisterOptions(builder.Configuration);
 
+builder.Services.AddAuth(builder.Configuration);
+
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 // Перехват ошибок при обработке запросов
@@ -24,5 +28,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.ApplyMigrations();
 
 app.UseHttpsRedirection();
+app.UseAuth();
 
 app.Run();

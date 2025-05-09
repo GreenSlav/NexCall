@@ -10,6 +10,7 @@ public interface IEmailService
     /// </summary>
     /// <param name="email">Адрес почты</param>
     /// <param name="code">Код верификации</param>
+    /// <param name="cancellationToken">Токен отмены</param>
     /// <returns></returns>
-    Task SendVerificationCodeAsync(string email, int code);
+    Task SendVerificationCodeAsync(string email, int code, CancellationToken cancellationToken);
 }

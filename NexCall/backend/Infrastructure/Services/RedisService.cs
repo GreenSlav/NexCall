@@ -30,4 +30,10 @@ public class RedisService : IRedisService
     {
         return await _db.StringGetAsync(key);
     }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteAsync(string key)
+    {
+        return await _db.KeyDeleteAsync(key);
+    }
 }

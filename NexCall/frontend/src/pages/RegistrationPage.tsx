@@ -140,7 +140,7 @@ const StyledModernButton = styled.button`
     }
 `;
 
-export const RegisterPage: FC = () => {
+export const RegistrationPage: FC = () => {
     const API_BASE_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
@@ -168,14 +168,23 @@ export const RegisterPage: FC = () => {
 
             if (!response.ok) {
                 const error = await response.json();
-                alert(error.message || "Ошибка при регистрации");
+                showError(error.message || "Ошибка при регистрации");
                 return;
             }
 
-            navigate("/login");
+            const data: {
+                id: string;
+                expiresAt: string; // ISO-строка, преобразуем потом
+            } = await response.json();
+
+            navigate(`/confirm-registration/${data.id}`, {
+                state: {
+                    expiresAt: data.expiresAt,
+                },
+            });
         } catch (error) {
             console.error("Ошибка регистрации:", error);
-            showError("Ошибка такая-то")
+            showError("Произошла ошибка при регистрации");
         }
     };
 

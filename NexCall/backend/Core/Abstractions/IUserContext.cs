@@ -8,7 +8,7 @@ namespace Core.Abstractions;
 public interface IUserContext
 {
     /// <summary>
-    /// ИД текущего пользователя
+    /// Идентификатор текущего пользователя
     /// </summary>
     long CurrentUserId { get; }
 

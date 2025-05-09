@@ -5,8 +5,16 @@ using StackExchange.Redis;
 
 namespace Web.Extensions;
 
+/// <summary>
+/// Класс регистрации базы данных
+/// </summary>
 public static class Database
 {
+    /// <summary>
+    /// Метод регистрации PostgreSQL
+    /// </summary>
+    /// <param name="services">Сервисы</param>
+    /// <param name="configuration">Конфигурации</param>
     public static void RegisterPostgresDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IDbContext, EfContext>();
@@ -14,6 +22,11 @@ public static class Database
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
     }
     
+    /// <summary>
+    /// Метод регистрации Redis
+    /// </summary>
+    /// <param name="services">Сервисы</param>
+    /// <param name="configuration">Конфигурации</param>
     public static void RegisterRedisDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IConnectionMultiplexer>(sp =>
